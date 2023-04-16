@@ -47,7 +47,7 @@ const BasicContainer = (props: ContainerProps) => {
               </li>
             </ul>
           </div>
-          <div className="flex-1 px-4 py-4 lg:px-8 lg:py-4">
+          <div className="flex-1 px-4 py-4 lg:px-8 lg:py-4 overflow-scroll">
             <button
               className="block lg:hidden mb-4 bg-gray-800 text-gray-100 px-2 py-1"
               onClick={toggleHamBurger}

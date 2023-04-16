@@ -9,6 +9,7 @@ import { useRouter } from 'next/router';
 import { ROUTE_NAMES } from '@utils/routes';
 import { useStorage } from '@utils/Storage.client';
 import { STORAGE_KEYS } from '@utils/keys';
+import { setCookies } from 'cookies-next';
 
 const Login = () => {
   const { setItem } = useStorage();
@@ -62,6 +63,7 @@ const Login = () => {
   useEffect(() => {
     if (submitLogin.isSuccess) {
       const data = submitLogin?.data;
+      setCookies('access_token', data?.token);
       setItem(STORAGE_KEYS.AUTH_DATA, data);
       router.push(ROUTE_NAMES.DASHBOARD);
     }
