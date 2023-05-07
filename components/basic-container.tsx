@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import Breadcrumbs from './atoms/icons';
 
 type ContainerProps = {
@@ -31,9 +32,9 @@ const BasicContainer = (props: ContainerProps) => {
                 </a>
               </li>
               <li className="mb-4">
-                <a href="#" className="block text-gray-100 hover:text-gray-300">
+                <Link href="/property" className="block text-gray-100 hover:text-gray-300">
                   Properties
-                </a>
+                </Link>
               </li>
               <li className="mb-4">
                 <a href="#" className="block text-gray-100 hover:text-gray-300">

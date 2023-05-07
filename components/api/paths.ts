@@ -5,7 +5,7 @@ const getHost = () => {
 const paths =  {
   login: () => `${getHost()}/api/admin/login`,
   getStates: () => `${getHost()}/api/admin/states`,
-  getCity: (stateId: number) => `${getHost()}/api/admin/cities/${stateId}`
+  getCity: (stateId: string | null) => `${getHost()}/api/admin/cities/${stateId}`
 }
 
 export default paths;

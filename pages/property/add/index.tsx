@@ -1,28 +1,40 @@
 import BasicContainer from '@components/basic-container';
 import { useGlobalContext } from 'contexts';
 import React, { useReducer, useState } from 'react';
-import get from 'lodash-es/get'
+import get from 'lodash-es/get';
+import { getCityLists, getStateList } from 'hooks/useCommon';
+import RemoveIcon from '@components/atoms/icons/Remove';
 
 type AvailablityOption = 'Immediately' | 'Not Available' | 'After While';
-const NewPropertyPage = () => {
+type PropsType = {
+  states: {
+    id: number;
+    name: string;
+  }[];
+};
+const NewPropertyPage = ({ states }: PropsType) => {
   const { toggleHamBurger, isHamburgerOpen } = useGlobalContext();
-  const [data, updateData] = useReducer((prev: any, next: any) => {
-    return {...prev, ...next};
-  }, {
-    propertyName: null,
-    state: null,
-    city: null,
-    lat: null,
-    long: null,
-    area: null,
-    address: null,
-    price: 0,
-    deposit: 0,
-    otherCharges: [],
-    availablity: 'Immediately'
-  })
+  const [data, updateData] = useReducer(
+    (prev: any, next: any) => {
+      return { ...prev, ...next };
+    },
+    {
+      propertyName: null,
+      state: null,
+      city: null,
+      lat: null,
+      long: null,
+      area: null,
+      address: null,
+      price: 0,
+      deposit: 0,
+      otherCharges: [],
+      availablity: 'Immediately',
+    }
+  );
 
   const [otherCharges, setOtherCharges] = useState<any>([]);
+  const [citylist, setCityList] = useState([]);
   const [availablity, setAvailablity] =
     useState<AvailablityOption>('Immediately');
 
@@ -32,14 +44,23 @@ const NewPropertyPage = () => {
     setAvailablity(event.target.value as AvailablityOption);
   };
 
+  const getCityList = async (stateId: string | null) => {
+    const data = await getCityLists(stateId);
+    setCityList(data);
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name: any = get(e, 'target.name', null);
     const value = get(e, 'target.value', null);
 
+    if (name === 'state') {
+      getCityList(value);
+    }
+
     updateData({
-      [name]: value
-    })
-  }
+      [name]: value,
+    });
+  };
 
   const handleAddCharge = () => {
     setOtherCharges([...otherCharges, '']);
@@ -50,6 +71,12 @@ const NewPropertyPage = () => {
     charges[index] = e.target.value;
     setOtherCharges(charges);
   };
+
+  const handleRemoveOtherCharges = (index: number) => {
+    const charges: any = [...otherCharges];
+    charges.splice(index, 1);
+    setOtherCharges(charges);
+  }
 
   return (
     <BasicContainer
@@ -68,6 +95,7 @@ const NewPropertyPage = () => {
               <input
                 id="property-name"
                 type="text"
+                name="propertyName"
                 value={data.propertyName}
                 onChange={(e) => handleChange(e)}
                 className="w-full px-3 py-2 rounded border border-gray-300 focus:outline-none focus:border-blue-500"
@@ -81,13 +109,15 @@ const NewPropertyPage = () => {
                 id="state"
                 value={data.state}
                 onChange={(e) => handleChange(e)}
+                name={`state`}
                 className="rounded-md border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full p-2"
               >
-                <option value=""></option>
-                <option value="CA">California</option>
-                <option value="NY">New York</option>
-                <option value="TX">Texas</option>
-                <option value="FL">Florida</option>
+                <option value="">Choose any state</option>
+                {states?.map((state: { id: number; name: string }) => (
+                  <option value={state?.id} key={state?.name}>
+                    {state?.name}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="flex flex-col space-y-2">
@@ -98,24 +128,49 @@ const NewPropertyPage = () => {
                 id="city"
                 value={data.city}
                 onChange={(e) => handleChange(e)}
+                name={`city`}
                 className="rounded-md border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full p-2"
               >
-                <option value=""></option>
-                <option value="Los Angeles">Los Angeles</option>
-                <option value="New York City">New York City</option>
-                <option value="Houston">Houston</option>
-                <option value="Miami">Miami</option>
+                <option value="">Choose any city</option>
+                {citylist?.map((city: { id: number; name: string }) => (
+                  <option value={city?.id} key={city?.name}>
+                    {city?.name}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="flex flex-row mb-4 gap-3">
-              <div>Lat: <input type={`text`} onChange={(e) => handleChange(e)} value={data.lat} name={'lat'} className={'w-full px-3 py-2 rounded border border-gray-300 focus:outline-none focus:border-blue-500'} /></div>
-              <div>Long: <input type={`text`} onChange={(e) => handleChange(e)} value={data.long} className={'w-full px-3 py-2 rounded border border-gray-300 focus:outline-none focus:border-blue-500'} /></div>
+              <div>
+                Lat:{' '}
+                <input
+                  type={`text`}
+                  onChange={(e) => handleChange(e)}
+                  value={data.lat}
+                  name={'lat'}
+                  className={
+                    'w-full px-3 py-2 rounded border border-gray-300 focus:outline-none focus:border-blue-500'
+                  }
+                />
+              </div>
+              <div>
+                Long:{' '}
+                <input
+                  type={`text`}
+                  onChange={(e) => handleChange(e)}
+                  value={data.long}
+                  name={'long'}
+                  className={
+                    'w-full px-3 py-2 rounded border border-gray-300 focus:outline-none focus:border-blue-500'
+                  }
+                />
+              </div>
             </div>
             <div className="mb-4">
               <label className="block font-bold mb-2">Address</label>
               <textarea
                 className="w-full px-3 py-2 rounded border border-gray-300 focus:outline-none focus:border-blue-500"
                 value={data.address}
+                name="address"
                 onChange={(e) => handleChange(e)}
               ></textarea>
             </div>
@@ -124,6 +179,7 @@ const NewPropertyPage = () => {
               <textarea
                 className="w-full px-3 py-2 rounded border border-gray-300 focus:outline-none focus:border-blue-500"
                 value={data.area}
+                name="area"
                 onChange={(e) => handleChange(e)}
               ></textarea>
             </div>
@@ -133,6 +189,7 @@ const NewPropertyPage = () => {
                 type="number"
                 className="w-full px-3 py-2 rounded border border-gray-300 focus:outline-none focus:border-blue-500"
                 value={data.price}
+                name="price"
                 onChange={(e: any) => handleChange(e)}
               />
             </div>
@@ -142,19 +199,32 @@ const NewPropertyPage = () => {
                 type="number"
                 className="w-full px-3 py-2 rounded border border-gray-300 focus:outline-none focus:border-blue-500"
                 value={data.deposit}
+                name="deposit"
                 onChange={(e: any) => handleChange(e)}
               />
             </div>
             <div className="mb-4">
               <label className="block font-bold mb-2">Other Charges</label>
               {otherCharges.map((charge: any, index: number) => (
-                <input
-                  key={index}
-                  type="text"
-                  className="w-full px-3 py-2 rounded border border-gray-300 focus:outline-none focus:border-blue-500 mb-2"
-                  value={charge}
-                  onChange={(e) => handleOtherCharges(e, index)}
-                />
+                <div className='flex justify-between gap-3 m-2' key={index}>
+                  <select className='rounded-md border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full p-2'>
+                    <option value={``}>Select Charges</option>
+                    <option value={`water`}>Water</option>
+                    <option value={`bill`}>Bill</option>
+                    <option value={`parking`}>Parking</option>
+                  </select>
+
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 rounded border border-gray-300 focus:outline-none focus:border-blue-500 mb-2"
+                    value={charge}
+                    name="otherCharge"
+                    onChange={(e) => handleOtherCharges(e, index)}
+                  />
+
+                  <button type='button' onClick={() => handleRemoveOtherCharges(index)}><RemoveIcon /></button>
+                </div>
+                
               ))}
               <button
                 className="px-4 py-2 bg-blue-500 text-white font-bold rounded"
@@ -164,7 +234,7 @@ const NewPropertyPage = () => {
                 Add
               </button>
             </div>
-            <div className='space-y-2'>
+            <div className="space-y-2">
               <label
                 htmlFor="availablity"
                 className="block text-sm font-medium text-gray-700"
@@ -202,10 +272,12 @@ const NewPropertyPage = () => {
 };
 
 export async function getStaticProps(context) {
-  
+  const statesList = await getStateList();
   return {
-    props: {}, // will be passed to the page component as props
-  }
+    props: {
+      states: statesList,
+    }, // will be passed to the page component as props
+  };
 }
 
 export default NewPropertyPage;
